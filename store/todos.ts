@@ -23,8 +23,7 @@ export const useTodoStore = defineStore('todo', () => {
 	const fetchTodos = async () => {
 		loading.value = true;
 		try {
-			const { data } = await useFetch<Todo[]>(`${useRuntimeConfig().public.apiBase}/todos`);
-			todos.value = data.value || [];
+			todos.value = await $fetch<Todo[]>(`${useRuntimeConfig().public.apiBase}/todos`);
 		} finally {
 			loading.value = false;
 		}
