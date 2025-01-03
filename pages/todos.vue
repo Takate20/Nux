@@ -1,19 +1,25 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { useUserStore } from "~/store/user";
 import { useTodoStore } from "~/store/todos";
 import { storeToRefs } from "pinia";
-import { TodoStatus } from "~/types/types";
-import { ref, computed, onBeforeMount } from 'vue';
+import { TodoStatus, type User } from "~/types/types";
+import { computed, onBeforeMount, ref } from 'vue';
 
 const userStore = useUserStore();
 const todoStore = useTodoStore();
+
 const user = userStore.user;
-const { favorites, filteredTodos, todos, filters, loading } = storeToRefs(todoStore);
+const { favorites, filteredTodos, filters, loading } = storeToRefs(todoStore);
 
 const newTodoUserId = ref<number>();
 const newTodoTitle = ref('');
 
-const userIds = computed(() => Array.from(new Set(todos.value.map(todo => todo.userId))));
+const userIds = await $fetch<Array<User>>(`${ useRuntimeConfig().public.apiBase }/users`)
+.then(users => users.map(user => user.id))
+.catch(error => {
+  console.error('Error fetching users:', error);
+  return [];
+});
 
 const page = ref(1);
 const itemsPerPage = 5;
@@ -28,7 +34,6 @@ const totalPages = computed(() => Math.ceil(filteredTodos.value.length / itemsPe
 const onSubmit = () => {
   todoStore.addTodo(newTodoUserId.value!, newTodoTitle.value);
 
-  // Очищення форми
   newTodoUserId.value = undefined;
   newTodoTitle.value = "";
 };
@@ -50,6 +55,7 @@ onBeforeMount(async () => {
     <div class="todos">
       <header class="todos__header">
         <h1 class="todos__title">Welcome, {{ user?.name }}</h1>
+        <button @click="userStore.logout()">Logout</button>
       </header>
 
       <section class="todos__section">
@@ -63,7 +69,7 @@ onBeforeMount(async () => {
             <option value="All users">All Users</option>
             <option v-for="id in userIds" :value="id">User {{ id }}</option>
           </select>
-          <input v-model="filters.search" placeholder="Search by title" class="todos__input"/>
+          <input v-model="filters.search" class="todos__input" placeholder="Search by title"/>
         </div>
 
         <template v-if="paginatedTodos.length > 0">
@@ -72,10 +78,10 @@ onBeforeMount(async () => {
               <div class="todos__item">
                 <h2 class="todos__item-title">{{ todo.title }}</h2>
                 <button
-                  @click="todoStore.toggleFavorite(todo.id)"
                   class="todos__favorite-button"
+                  @click="todoStore.toggleFavorite(todo.id)"
                 >
-                  <Icon name="mdi-heart" :class="favorites.includes(todo.id) ? 'todos__favorite' : 'todos__not-favorite'"/>
+                  <Icon :class="favorites.includes(todo.id) ? 'todos__favorite' : 'todos__not-favorite'" name="mdi-heart"/>
                 </button>
               </div>
               <p class="todos__item-status">Status: {{ todo.completed ? 'Completed' : 'Uncompleted' }}</p>
@@ -89,16 +95,16 @@ onBeforeMount(async () => {
         <div class="todos__pagination">
           <button
             :disabled="page <= 1"
-            @click="page--"
             class="todos__pagination-button"
+            @click="page--"
           >
             Previous
           </button>
           <span class="todos__pagination-info">Page {{ page }} of {{ totalPages }}</span>
           <button
             :disabled="page >= totalPages"
-            @click="page++"
             class="todos__pagination-button"
+            @click="page++"
           >
             Next
           </button>
@@ -107,23 +113,23 @@ onBeforeMount(async () => {
 
       <section class="todos__section">
         <h2 class="todos__section-title">Create Todo</h2>
-        <form @submit.prevent="onSubmit" class="todos__form">
+        <form class="todos__form" @submit.prevent="onSubmit">
           <input
             v-model.number="newTodoUserId"
-            placeholder="User ID"
             class="todos__input"
+            placeholder="User ID"
             required
           />
           <input
             v-model="newTodoTitle"
-            placeholder="Title"
             class="todos__input"
+            placeholder="Title"
             required
           />
           <button
-            type="submit"
-            class="todos__submit-button"
             :disabled="isSubmitDisabled"
+            class="todos__submit-button"
+            type="submit"
           >
             Add
           </button>
@@ -133,7 +139,7 @@ onBeforeMount(async () => {
   </template>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .todos {
   &__list {
     list-style: none;

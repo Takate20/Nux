@@ -69,5 +69,5 @@ export const useTodoStore = defineStore('todo', () => {
 		});
 	});
 	
-	return { favorites, toggleFavorite, fetchTodos, loadFavorites, filteredTodos, todos, filters, loading, addTodo };
+	return { favorites, toggleFavorite, fetchTodos, loadFavorites, filteredTodos, filters, loading, addTodo };
 });

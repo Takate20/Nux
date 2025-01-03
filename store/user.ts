@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 
 export const useUserStore = defineStore('user', () => {
 	const user = ref<User | null>(null);
-	const loggedIn = ref(false);
 	const error = ref<string | null>(null);
 	
 	const router = useRouter();
@@ -21,20 +20,19 @@ export const useUserStore = defineStore('user', () => {
 		const foundUser = users.find((u) => u.username === username && u.phone === phone);
 		
 		if (foundUser) {
-			console.log(username, phone);
 			localStorage.setItem('user', JSON.stringify(foundUser));
 			
-			loggedIn.value = true;
 			await router.push('/todos');
 		} else {
 			error.value = 'login error'
 		}
 	};
 	
-	const logout = () => {
+	const logout = async () => {
 		user.value = null;
-		loggedIn.value = false;
+		localStorage.removeItem('user')
+		await router.push('/');
 	};
 	
-	return { user, loggedIn, login, logout, error, initializeUser };
+	return { user, login, logout, error, initializeUser };
 });
