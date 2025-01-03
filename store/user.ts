@@ -21,8 +21,9 @@ export const useUserStore = defineStore('user', () => {
 		
 		if (foundUser) {
 			localStorage.setItem('user', JSON.stringify(foundUser));
-			
-			await router.push('/todos');
+			user.value = foundUser;
+
+			await router.push('/');
 		} else {
 			error.value = 'login error'
 		}
@@ -31,7 +32,7 @@ export const useUserStore = defineStore('user', () => {
 	const logout = async () => {
 		user.value = null;
 		localStorage.removeItem('user')
-		await router.push('/');
+		await router.push('/login');
 	};
 	
 	return { user, login, logout, error, initializeUser };

@@ -1,6 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
-import path from "path";
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -10,8 +8,12 @@ export default defineNuxtConfig({
     port: 3000
   },
 
+  css: [
+    "@/assets/app.scss",
+  ],
+
   modules: ['@pinia/nuxt', '@nuxt/icon'],
-  
+
   runtimeConfig: {
     public: {
       apiBase: 'https://jsonplaceholder.typicode.com',
